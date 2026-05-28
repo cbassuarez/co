@@ -1,0 +1,454 @@
+{
+"schema": "co.reference_pack.anti.v1",
+"artwork": {
+"title": "co",
+"reference_pack": "co anti-references",
+"range": "01-08",
+"role": "contrastive anti-reference set",
+"principle": "These are not bad images. They are polished but wrong implementations of the artwork.",
+"core_invariant": "co is a silent live generative public apparatus in which ambiguous bodies, routes, windows of time, and signals temporarily produce place.",
+"use_instruction": "Use these anti-references to identify rejected visual/conceptual failure modes. Do not imitate these images. Use the captions and repair instructions to steer away from each failure while preserving the positive invariants of co."
+},
+"global_positive_invariants": [
+"silent_public_apparatus",
+"live_generative_feeling",
+"ambiguous_bodies",
+"routes_as_tendencies_not_maps",
+"windows_of_time",
+"signal_control",
+"co_presence",
+"rare_synchronization",
+"public_collectivity",
+"beauty_first",
+"system_second",
+"explanation_third",
+"browser_native_jitter",
+"place_produced_not_depicted"
+],
+"global_negative_invariants": [
+"literal_trains",
+"literal_commuters",
+"platform_signage",
+"readable_transit_maps",
+"transit_bullets",
+"branded_wayfinding",
+"readable_UI",
+"generic_particles",
+"decorative_ambient_atmosphere",
+"AI_city_spectacle",
+"surveillance_aesthetic",
+"militarized_command_system",
+"fantasy_architecture_as_subject",
+"dashboard_explanation",
+"theory_caption_art",
+"external_installation_context"
+],
+"items": [
+{
+"id": "co_anti_01",
+"filename": "co_anti_01_literal_transit_diagram.png",
+"label": "reject",
+"failure_mode": "literal_transit_diagram",
+"sidecar_caption": "Wrong because routed paths become a readable transit map; co must instead treat routes as temporary behavioral tendencies and pressure fields produced by bodies, signals, delays, and shared attention.",
+"diagnostic_summary": "The image is polished, dark, luminous, and structurally clear, but the routes are too legible as transportation infrastructure. The network reads as a map rather than as behavior.",
+"why_it_fails": [
+"Routes become fixed diagrammatic lines instead of temporary pressures or tendencies.",
+"Nodes become transfer points rather than moments of co-presence.",
+"The system implies transit legibility rather than place emerging from relation.",
+"The viewer reads transportation design before public apparatus behavior."
+],
+"violated_invariants": [
+"routes_as_tendencies_not_maps",
+"place_produced_not_depicted",
+"ambiguous_bodies",
+"system_second",
+"no_literal_transit_imagery"
+],
+"visual_symptoms": [
+"clean colored lines",
+"clear transfer nodes",
+"diagrammatic hierarchy",
+"map-like branching",
+"fixed network topology",
+"legible route separations",
+"too much transit-system clarity"
+],
+"avoid_in_future": [
+"readable route diagrams",
+"subway-map logic",
+"transfer-node hierarchy",
+"transportation diagram aesthetics",
+"clean transit network schematics"
+],
+"repair_instruction": "Return the routes to ambiguous behavioral pressure fields. Keep luminous paths and relation, but make them provisional, activated by bodies and signals, not readable as a stable transit map.",
+"preferred_replacement_features": [
+"soft route traces that emerge from use",
+"ambiguous motion pressure",
+"partial paths that dissolve",
+"agents activating routes",
+"windows of time interrupting routes",
+"near-synchronization rather than transfer-node clarity"
+],
+"prompt_time_negative": "Do not make the routed paths read as a subway map, rail diagram, transit schematic, or clean network topology.",
+"prompt_time_positive": "Treat routes as temporary behavioral tendencies and pressure fields produced by agents, signals, delays, and shared attention."
+},
+{
+"id": "co_anti_02",
+"filename": "co_anti_02_generic_ambient_spectacle.png",
+"label": "reject",
+"failure_mode": "generic_ambient_spectacle",
+"sidecar_caption": "Wrong because the work dissolves into decorative atmosphere and loses the structured relations, public tension, and behavioral specificity that define co.",
+"diagnostic_summary": "The image is beautiful and cinematic, but it becomes ambient light atmosphere. It lacks agents, public tension, signal behavior, co-presence, and structured relational logic.",
+"why_it_fails": [
+"Beauty becomes decorative rather than systemic.",
+"The image contains glow and atmosphere but no public apparatus behavior.",
+"There is no sense of agents negotiating place.",
+"No routes, windows, signals, delays, or earned synchronization are legible."
+],
+"violated_invariants": [
+"system_second",
+"ambiguous_bodies",
+"routes_as_tendencies_not_maps",
+"windows_of_time",
+"signal_control",
+"co_presence",
+"rare_synchronization",
+"public_collectivity"
+],
+"visual_symptoms": [
+"flowing ribbons",
+"soft gradients",
+"glowing mist",
+"luxurious atmosphere",
+"smooth luminous waves",
+"decorative cinematic haze",
+"no behavioral specificity"
+],
+"avoid_in_future": [
+"ambient screensaver atmosphere",
+"festival projection beauty",
+"pure glowing ribbons",
+"decorative mist",
+"unstructured light waves",
+"generic spectral spectacle"
+],
+"repair_instruction": "Keep the beauty and dark luminous atmosphere, but reintroduce structured relations: agents, route pressure, temporal windows, signal fields, co-presence, interruption, and rare synchronization.",
+"preferred_replacement_features": [
+"agent-like bodies",
+"route activation",
+"signal-window behavior",
+"visible delay",
+"temporary place-fields",
+"co-presence clusters",
+"earned synchronization events"
+],
+"prompt_time_negative": "Do not let the work become a beautiful ambient light spectacle, decorative mist, or generic generative screensaver.",
+"prompt_time_positive": "Make beauty arise from structured relations between agents, routes, windows, signals, delay, and temporary co-presence."
+},
+{
+"id": "co_anti_03",
+"filename": "co_anti_03_overfigured_commuter_scene.png",
+"label": "reject",
+"failure_mode": "over_figured_commuter_scene",
+"sidecar_caption": "Wrong because the ambiguity collapses into literal people and narrative transit illustration, reducing the work to a scene about transit rather than a system producing place.",
+"diagnostic_summary": "The image becomes a narrative scene of commuters. It may be visually impressive, but the bodies are too literal, individualized, and socially illustrative.",
+"why_it_fails": [
+"Ambiguous bodies collapse into recognizable commuters.",
+"The work becomes a scene about transit rather than a system producing place.",
+"Narrative human detail overwhelms generative public-apparatus behavior.",
+"Phones, clothing, bags, and posture turn agents into characters."
+],
+"violated_invariants": [
+"ambiguous_bodies",
+"place_produced_not_depicted",
+"public_apparatus_not_scene",
+"no_literal_transit_imagery",
+"public_collectivity"
+],
+"visual_symptoms": [
+"recognizable human bodies",
+"coats",
+"bags",
+"phones",
+"individual poses",
+"commuter crowd narrative",
+"literal public transit scene",
+"human figuration dominating system behavior"
+],
+"avoid_in_future": [
+"commuter illustration",
+"literal people",
+"human narrative scene",
+"recognizable clothing and accessories",
+"platform-like crowding",
+"public transit genre imagery"
+],
+"repair_instruction": "Replace literal commuters with ambiguous bodies that could also be vehicles, packets, air currents, memory traces, or small public events. Preserve collectivity without turning agents into characters.",
+"preferred_replacement_features": [
+"nonliteral agent marks",
+"particle-body ambiguity",
+"capsules or luminous traces",
+"bodies without faces or clothing",
+"collective motion fields",
+"co-presence without portraiture"
+],
+"prompt_time_negative": "Do not depict recognizable commuters, faces, clothing, phones, bags, or a narrative public transit crowd.",
+"prompt_time_positive": "Use ambiguous bodies that remain suspended between person, vehicle, packet, air current, memory trace, and public event."
+},
+{
+"id": "co_anti_04",
+"filename": "co_anti_04_subway_brand_homage.png",
+"label": "reject",
+"failure_mode": "subway_brand_homage",
+"sidecar_caption": "Wrong because the image imitates transit branding, wayfinding, signage, bullets, or map logic; co should address public infrastructure without becoming a transit-brand graphic system.",
+"diagnostic_summary": "The image is graphically crisp and public-infrastructure adjacent, but it borrows too strongly from signage, wayfinding, transit bullets, and branded diagram systems.",
+"why_it_fails": [
+"The image becomes a graphic identity system instead of a live public apparatus.",
+"Wayfinding logic replaces generative behavior.",
+"Circular markers and arrows imply signage rather than co-presence.",
+"Transit-brand familiarity overdetermines the work."
+],
+"violated_invariants": [
+"browser_native_public_apparatus",
+"no_transit_bullets",
+"no_branded_wayfinding",
+"routes_as_tendencies_not_maps",
+"place_produced_not_depicted"
+],
+"visual_symptoms": [
+"colored disks",
+"circular markers",
+"arrows",
+"signage-like modular grids",
+"wayfinding hierarchy",
+"transit-brand color logic",
+"institutional graphic design language"
+],
+"avoid_in_future": [
+"route bullets",
+"wayfinding arrows",
+"signage grids",
+"transit-brand homage",
+"MTA-like or subway-like graphic systems",
+"diagrammatic public signage"
+],
+"repair_instruction": "Keep civic clarity and restrained primary color, but remove wayfinding grammar. Let public infrastructure appear through behavior, not branding.",
+"preferred_replacement_features": [
+"non-signage signal pulses",
+"ambiguous route pressure",
+"translucent time windows",
+"agent swarms",
+"field-based structure",
+"public-machine atmosphere without brand language"
+],
+"prompt_time_negative": "Do not imitate subway branding, wayfinding systems, route bullets, arrows, station signage, or modular transit graphics.",
+"prompt_time_positive": "Address public infrastructure through generative behavior, signal fields, ambiguous agents, and temporary place formation."
+},
+{
+"id": "co_anti_05",
+"filename": "co_anti_05_interface_dashboard.png",
+"label": "reject",
+"failure_mode": "interface_dashboard",
+"sidecar_caption": "Wrong because the image becomes a control interface or data dashboard; co must feel like a public apparatus in operation, not a visualization panel explaining itself.",
+"diagnostic_summary": "The image becomes an explanatory UI. It appears to monitor or control a system rather than being the system itself.",
+"why_it_fails": [
+"Dashboard panels replace embodied generative behavior.",
+"The work becomes explanatory rather than operative.",
+"Charts, widgets, ticks, and overlays imply control-room distance.",
+"The viewer reads interface design before public place formation."
+],
+"violated_invariants": [
+"public_apparatus_not_dashboard",
+"explanation_third",
+"place_produced_not_depicted",
+"live_generative_feeling",
+"no_readable_UI"
+],
+"visual_symptoms": [
+"modular panels",
+"data widgets",
+"status bars",
+"charts",
+"graph lines",
+"technical overlays",
+"measurement ticks",
+"control-interface composition"
+],
+"avoid_in_future": [
+"HUD aesthetics",
+"control-room dashboard",
+"data visualization panels",
+"status UI",
+"monitoring interface",
+"explanatory systems diagrams",
+"interface-first composition"
+],
+"repair_instruction": "Remove the dashboard layer. Let the system be seen directly as a public apparatus in operation, with agents, fields, and signals behaving rather than being monitored.",
+"preferred_replacement_features": [
+"fullscreen generative field",
+"no panel divisions",
+"behavioral traces instead of charts",
+"signals embedded in the image",
+"routes activated by agents",
+"place-fields appearing as events, not readouts"
+],
+"prompt_time_negative": "Do not create a dashboard, HUD, control interface, data visualization, monitoring screen, or explanatory panel layout.",
+"prompt_time_positive": "Show the public apparatus itself in operation: agents, routes, windows, signals, and co-presence forming place without UI explanation."
+},
+{
+"id": "co_anti_06",
+"filename": "co_anti_06_sci_fi_surveillance_city.png",
+"label": "reject",
+"failure_mode": "sci_fi_surveillance_city",
+"sidecar_caption": "Wrong because the image turns public space into cinematic surveillance architecture; co should feel collective and civic, not militarized, paranoid, or authoritarian.",
+"diagnostic_summary": "The image becomes a surveillance or command system. Its public space is controlled, tracked, and militarized rather than collectively produced.",
+"why_it_fails": [
+"Signal control becomes authoritarian command.",
+"Bodies become targets or tracked objects.",
+"Scanning beams and targeting grids produce paranoia rather than civic collectivity.",
+"The image suggests observation and enforcement instead of co-presence."
+],
+"violated_invariants": [
+"public_collectivity",
+"civic_not_authoritarian",
+"signal_control_without_command_narrative",
+"ambiguous_bodies",
+"place_produced_not_policed"
+],
+"visual_symptoms": [
+"target boxes",
+"scanning beams",
+"red alert accents",
+"tracked humanoid markers",
+"surveillance planes",
+"militarized architecture",
+"command-center perspective",
+"authoritarian monitoring atmosphere"
+],
+"avoid_in_future": [
+"surveillance city",
+"targeting systems",
+"militarized scanning",
+"drone-like observation",
+"red alert UI",
+"security-state atmosphere",
+"tracked bodies"
+],
+"repair_instruction": "Preserve signal behavior but remove surveillance grammar. Signals should coordinate and condition public relation, not target, police, or command bodies.",
+"preferred_replacement_features": [
+"civic signal pulses",
+"soft window fields",
+"non-targeting co-presence",
+"collective drift",
+"porous place-fields",
+"ambiguous bodies without boxes or reticles"
+],
+"prompt_time_negative": "Do not make the image feel like surveillance, targeting, policing, militarized command, drones, or authoritarian city control.",
+"prompt_time_positive": "Make signal control feel civic and relational: a public apparatus coordinating temporary co-presence without targeting or command."
+},
+{
+"id": "co_anti_07",
+"filename": "co_anti_07_ai_architecture_fantasy.png",
+"label": "reject",
+"failure_mode": "ai_city_hallucination",
+"sidecar_caption": "Wrong because architectural spectacle replaces system behavior; co should generate place through agents, routes, windows, and signals, not through fantasy buildings or impossible stations.",
+"diagnostic_summary": "The image becomes dominated by speculative architecture. The visual interest comes from impossible spaces rather than from the behavior of a live generative system.",
+"why_it_fails": [
+"Architecture becomes the subject instead of the condition.",
+"Spectacular buildings replace agents, routes, windows, and signals.",
+"The image depicts an impossible place rather than producing place.",
+"Cinematic depth and monumentality overpower behavioral specificity."
+],
+"violated_invariants": [
+"place_produced_not_depicted",
+"live_generative_feeling",
+"ambiguous_bodies",
+"routes_as_tendencies_not_maps",
+"windows_of_time",
+"signal_control"
+],
+"visual_symptoms": [
+"monumental halls",
+"glass vaults",
+"floating bridges",
+"impossible atriums",
+"fantasy civic architecture",
+"architectural spectacle",
+"building-first composition"
+],
+"avoid_in_future": [
+"AI-designed future station",
+"fantasy public building",
+"impossible architecture",
+"monumental atrium spectacle",
+"architecture as main subject",
+"cinematic concept-art environment"
+],
+"repair_instruction": "Reduce architecture to background condition or remove it entirely. Let place emerge from agent behavior, routes, temporal windows, signal fields, and rare synchronization.",
+"preferred_replacement_features": [
+"architecture implied by fields rather than depicted",
+"agents in relation",
+"translucent windows",
+"route pressure",
+"luminous place-fields",
+"system behavior as the spectacle"
+],
+"prompt_time_negative": "Do not make the image a fantasy building, impossible station, architectural concept art, or luminous civic hall.",
+"prompt_time_positive": "Make the visual power come from live system behavior: agents, routes, windows, signals, co-presence, and rare synchronization."
+},
+{
+"id": "co_anti_08",
+"filename": "co_anti_08_decorative_particle_screensaver.png",
+"label": "reject",
+"failure_mode": "decorative_particle_screensaver",
+"sidecar_caption": "Wrong because particles become ornamental motion; co needs agents with routing, delay, co-presence, and rare synchronization, not abstract shimmer.",
+"diagnostic_summary": "The image is computational and visually attractive, but particles remain ornamental. They do not become agents within a public system.",
+"why_it_fails": [
+"Particles form beautiful swarms without public behavior.",
+"Motion is ornamental rather than routed, delayed, or relational.",
+"There are no windows of time, signals, co-presence, or place-fields.",
+"The system lacks tension, interruption, and earned synchronization."
+],
+"violated_invariants": [
+"ambiguous_bodies",
+"routes_as_tendencies_not_maps",
+"windows_of_time",
+"signal_control",
+"co_presence",
+"rare_synchronization",
+"public_collectivity"
+],
+"visual_symptoms": [
+"thousands of glowing points",
+"soft particle trails",
+"bokeh",
+"smooth swarms",
+"decorative arcs",
+"abstract shimmer",
+"no agent-level behavior",
+"no civic tension"
+],
+"avoid_in_future": [
+"ambient particle screensaver",
+"ornamental swarms",
+"pure bokeh fields",
+"abstract shimmer",
+"decorative flow particles",
+"particle beauty without routing or delay"
+],
+"repair_instruction": "Keep particle richness only if particles behave as agents in a public apparatus. Add routing, delay, signal windows, co-presence, interruption, and rare synchronization.",
+"preferred_replacement_features": [
+"agent-like particles with state",
+"route-following and route-resistance",
+"windowed behavior changes",
+"signal-triggered clustering",
+"temporary place-fields",
+"near-misses and delays",
+"rare collective synchronization"
+],
+"prompt_time_negative": "Do not create a decorative particle screensaver, abstract shimmer field, ornamental swarm, or generic computational bokeh.",
+"prompt_time_positive": "Make particles behave as ambiguous public agents with routing, delay, co-presence, signal windows, and rare earned synchronization."
+}
+]
+}
+
