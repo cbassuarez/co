@@ -15,8 +15,8 @@ const msgs = [];
 page.on('console', (m) => msgs.push(`[${m.type()}] ${m.text()}`));
 page.on('pageerror', (e) => msgs.push(`[pageerror] ${e.message}`));
 page.on('requestfailed', (r) => msgs.push(`[reqfail] ${r.url()} :: ${r.failure()?.errorText}`));
-await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 1 });
-await page.goto('http://127.0.0.1:5173/?mode=debug&t=50', { waitUntil: 'networkidle0' });
+await page.setViewport({ width: 1920, height: 1080, deviceScaleFactor: 1 });
+await page.goto('http://127.0.0.1:5173/?mode=debug&t=65', { waitUntil: 'networkidle0' });
 await new Promise(r => setTimeout(r, 3500));
 
 // Probe scene info

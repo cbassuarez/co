@@ -110,14 +110,25 @@ async function main() {
 
   const clock = new Clock(params.durationSeconds, params.startAt);
 
+  // Capture-mode hook: when ?mode=capture, expose a deterministic time setter
+  // so a Puppeteer harness can step through the cycle frame-by-frame.
+  let forcedT: number | null = null;
+  if (params.mode === 'capture' || params.mode === 'debug') {
+    (window as any).__coSetT = (tSeconds: number) => {
+      forcedT = tSeconds;
+    };
+    (window as any).__coReady = true;
+  }
+
   let last = performance.now();
   function frame(now: number) {
-    const dtMs = now - last;
     last = now;
 
     const state = clock.tick();
-    if (params.paused) {
-      // hold time still; tick still runs but t doesn't advance
+    if (forcedT !== null) {
+      state.cycleTime = forcedT % params.durationSeconds;
+      state.t = state.cycleTime / params.durationSeconds;
+      state.elapsed = forcedT;
     }
 
     // Sample signals & curves
