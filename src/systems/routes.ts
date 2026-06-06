@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { RNG } from '../engine/seed';
 import { rangeRNG } from '../engine/seed';
+import type { PlaceConfig } from '../place/place';
 import routeVert from '../shaders/route.vert?raw';
 import routeFrag from '../shaders/route.frag?raw';
 
@@ -10,6 +11,15 @@ const ACCENTS = {
   yellow:new THREE.Color(0xffc329),
   blue:  new THREE.Color(0x2a78ff)
 } as const;
+
+// Snap an angle toward the nearest grid axis (multiples of π/2 about `ori`),
+// blended by `bias`. bias 0 = untouched organic arc; bias 1 = axis-aligned.
+function gridSnapAngle(a: number, oriRad: number, bias: number): number {
+  if (bias <= 0) return a;
+  const rel = a - oriRad;
+  const snapped = Math.round(rel / (Math.PI / 2)) * (Math.PI / 2) + oriRad;
+  return a + (snapped - a) * bias;
+}
 
 export interface Route {
   curve: THREE.CatmullRomCurve3;
@@ -27,15 +37,26 @@ export interface RouteSystem {
   group: THREE.Group;
 }
 
-function makeCurve(rng: RNG, fieldW: number, fieldD: number): THREE.CatmullRomCurve3 {
+function makeCurve(
+  rng: RNG,
+  fieldW: number,
+  fieldD: number,
+  gridBias: number,
+  oriRad: number,
+  tension: number
+): THREE.CatmullRomCurve3 {
   // Each route begins off-edge, sweeps an arc near or through the center, and
-  // exits another edge. Control points are 4..6 per route.
+  // exits another edge. Control points are 4..6 per route. With gridBias > 0 the
+  // entry/exit angles snap toward the city axis and the midsection straightens,
+  // turning organic arcs (LA boulevards) into a rectilinear grid (Manhattan).
   const nPts = 4 + Math.floor(rng() * 3);
   const pts: THREE.Vector3[] = [];
 
   // entry and exit on opposing-ish edges so routes traverse the field
-  const entryAngle = rng() * Math.PI * 2;
-  const exitAngle = entryAngle + Math.PI * (0.55 + rng() * 0.9);
+  const entryAngle0 = rng() * Math.PI * 2;
+  const exitAngle0 = entryAngle0 + Math.PI * (0.55 + rng() * 0.9);
+  const entryAngle = gridSnapAngle(entryAngle0, oriRad, gridBias);
+  const exitAngle = gridSnapAngle(exitAngle0, oriRad, gridBias);
 
   const entry = new THREE.Vector3(
     Math.cos(entryAngle) * fieldW * (1.0 + rng() * 0.3),
@@ -51,18 +72,21 @@ function makeCurve(rng: RNG, fieldW: number, fieldD: number): THREE.CatmullRomCu
   pts.push(entry);
   for (let i = 1; i < nPts - 1; i++) {
     const f = i / (nPts - 1);
-    const base = entry.clone().lerp(exit, f);
+    const straight = entry.clone().lerp(exit, f);
+    const base = straight.clone();
     // pull the midsection toward the world's central interest band
     base.lerp(new THREE.Vector3(rangeRNG(rng, -1.2, 1.2), rangeRNG(rng, 0.4, 2.6), rangeRNG(rng, -1.5, 0.8)), 0.45 + rng() * 0.3);
-    // sideways jitter so the curve isn't a flat sag
-    base.x += rangeRNG(rng, -1.6, 1.6);
-    base.z += rangeRNG(rng, -1.6, 1.6);
+    // sideways jitter so the curve isn't a flat sag — damped under grid bias
+    base.x += rangeRNG(rng, -1.6, 1.6) * (1 - gridBias);
+    base.z += rangeRNG(rng, -1.6, 1.6) * (1 - gridBias);
+    // straighten toward the entry→exit line as grid bias rises
+    base.lerp(straight, gridBias * 0.7);
     base.y = Math.max(0.05, base.y);
     pts.push(base);
   }
   pts.push(exit);
 
-  const curve = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0.45);
+  const curve = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', tension);
   return curve;
 }
 
@@ -71,21 +95,28 @@ export function createRoutes(opts: {
   count: number;
   fieldWidth: number;
   fieldDepth: number;
+  place: PlaceConfig;
 }): RouteSystem {
+  const gridBias = opts.place.routes.gridBias;
+  const oriRad = (opts.place.routes.orientationDeg * Math.PI) / 180;
+  const tension = opts.place.routes.curveTension;
+  const accentFraction = opts.place.routes.accentFraction;
+  const whiteThresh = 1 - accentFraction;
+  const third = accentFraction / 3;
   const group = new THREE.Group();
   group.renderOrder = 5;
   const routes: Route[] = [];
 
   for (let i = 0; i < opts.count; i++) {
-    const curve = makeCurve(opts.rng, opts.fieldWidth, opts.fieldDepth);
+    const curve = makeCurve(opts.rng, opts.fieldWidth, opts.fieldDepth, gridBias, oriRad, tension);
 
-    // 70% of routes are warm-white. 30% pick from R/Y/B accent.
+    // Most routes are warm-white; a place-set fraction are accent (R/Y/B split).
     const accentRoll = opts.rng();
     let color: THREE.Color;
     let accentTier: 0 | 1;
-    if (accentRoll < 0.70) { color = ACCENTS.white; accentTier = 0; }
-    else if (accentRoll < 0.80) { color = ACCENTS.red; accentTier = 1; }
-    else if (accentRoll < 0.90) { color = ACCENTS.yellow; accentTier = 1; }
+    if (accentRoll < whiteThresh) { color = ACCENTS.white; accentTier = 0; }
+    else if (accentRoll < whiteThresh + third) { color = ACCENTS.red; accentTier = 1; }
+    else if (accentRoll < whiteThresh + 2 * third) { color = ACCENTS.yellow; accentTier = 1; }
     else { color = ACCENTS.blue; accentTier = 1; }
 
     const tubeRadius = accentTier === 1 ? 0.022 : 0.015;

@@ -7,13 +7,20 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview --port 4173"
+    "preview": "vite preview --port 4173",
+    "typecheck": "tsc --noEmit",
+    "render": "node scripts/render.mjs",
+    "capture": "node scripts/capture.mjs",
+    "record": "node scripts/record.mjs",
+    "build:skylines": "node scripts/build-skylines.mjs",
+    "build:venue": "node scripts/build-venue.mjs"
   },
   "dependencies": {
     "three": "0.169.0"
   },
   "devDependencies": {
     "@types/three": "0.169.0",
+    "puppeteer": "23.6.0",
     "typescript": "5.5.4",
     "vite": "5.4.10"
   }

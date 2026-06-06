@@ -11,6 +11,7 @@ export interface Params {
   quality: 'high' | 'med' | 'low';
   startAt: number;     // seconds offset into the loop (debug/capture only)
   paused: boolean;
+  place: string | null; // ?place= override for the place resolver (null = auto)
 }
 
 const DEFAULTS: Params = {
@@ -21,7 +22,8 @@ const DEFAULTS: Params = {
   showCursor: false,
   quality: 'high',
   startAt: 0,
-  paused: false
+  paused: false,
+  place: null
 };
 
 function parseFloatOr(v: string | null, fallback: number): number {
@@ -65,6 +67,7 @@ export function readParams(): Params {
     showCursor,
     quality,
     startAt: parseFloatOr(q.get('t'), 0),
-    paused: parseBoolOr(q.get('paused'), false)
+    paused: parseBoolOr(q.get('paused'), false),
+    place: (q.get('place') ?? '').trim().toLowerCase() || null
   };
 }

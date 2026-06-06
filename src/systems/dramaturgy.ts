@@ -9,6 +9,7 @@ import type { Route, AgentRouteBind } from './routes';
 import type { WindowField } from './windows';
 import { windowAperture } from './windows';
 import type { SignalSample } from './signals';
+import type { PlaceConfig } from '../place/place';
 
 function smoothstep(a: number, b: number, x: number): number {
   if (b === a) return x < a ? 0 : 1;
@@ -32,15 +33,23 @@ export interface PhaseCurves {
   vignette: number;      // vignette strength
   accent: number;        // global accent mix
   haloIntensity: number; // place-field halo
+  assembly: number;      // 0 dispersed … 1 coalesced into the skyline silhouette
   phaseLabel: string;    // for HUD
 }
 
-export function curvesAtT(t: number, sig: SignalSample): PhaseCurves {
+export function curvesAtT(t: number, sig: SignalSample, place: PlaceConfig): PhaseCurves {
+  // Place tempo: shift the sync-anchored bumps to the place's syncTime, widen or
+  // tighten them, and sharpen/soften how quickly the crowd arrives. All default
+  // to no-ops for web-default (syncTime 0.68, tightness 1, ramp 1).
+  const sShift = place.tempo.syncTime - 0.68;
+  const bw = place.tempo.syncTightness;
+  const sharp = place.tempo.densityRampSharpness;
+
   // density: low → strong → peak → dissolve
   const density =
-    smoothstep(0.00, 0.35, t) * 0.55 +
+    smoothstep(0.00, 0.35 / sharp, t) * 0.55 +
     smoothstep(0.35, 0.65, t) * 0.35 +
-    bump(t, 0.72, 0.10) * 0.20 -
+    bump(t, 0.72 + sShift, 0.10 * bw) * 0.20 -
     smoothstep(0.82, 1.00, t) * 0.65;
 
   const densityClamped = Math.max(0.04, Math.min(1.0, density));
@@ -49,15 +58,15 @@ export function curvesAtT(t: number, sig: SignalSample): PhaseCurves {
   const routeVis =
     smoothstep(0.10, 0.30, t) * 0.45 +
     smoothstep(0.30, 0.55, t) * 0.30 +
-    bump(t, 0.68, 0.06) * 0.55 +
-    bump(t, 0.78, 0.06) * 0.30 -
+    bump(t, 0.68 + sShift, 0.06 * bw) * 0.55 +
+    bump(t, 0.78 + sShift, 0.06 * bw) * 0.30 -
     smoothstep(0.86, 1.00, t) * 0.80;
   const routeVisClamped = Math.max(0.0, Math.min(1.0, routeVis));
 
   // synchronization — rare and earned
   const syncStrength =
-    bump(t, 0.68, 0.06) * 1.00 +
-    bump(t, 0.78, 0.07) * 0.55;
+    bump(t, 0.68 + sShift, 0.06 * bw) * 1.00 +
+    bump(t, 0.78 + sShift, 0.07 * bw) * 0.55;
   const syncClamped = Math.max(0, Math.min(1, syncStrength));
 
   // jitter — moderate at start, lifts during routing, settles during sync
@@ -85,6 +94,16 @@ export function curvesAtT(t: number, sig: SignalSample): PhaseCurves {
   const halo = smoothstep(0.42, 0.62, t) * 0.6 + syncClamped * 0.55
              - smoothstep(0.88, 1.0, t) * 0.7;
 
+  // assembly — the dispersed crowd coalesces into the skyline silhouette at the
+  // synchronization, then scatters again. Returns to 0 well before the loop wraps
+  // (both ends dispersed), so the 120s loop is seamless. The per-place strength is
+  // applied in updateAgents.
+  const assembly = Math.max(0, Math.min(1,
+    smoothstep(0.28, 0.60, t) * 0.7 +
+    bump(t, 0.68 + sShift, 0.12 * bw) * 0.5 -
+    smoothstep(0.80, 0.96, t) * 1.2
+  ));
+
   const phaseLabel =
     t < 0.17 ? '00 — dispersed attention' :
     t < 0.375 ? '01 — routing appears' :
@@ -102,6 +121,7 @@ export function curvesAtT(t: number, sig: SignalSample): PhaseCurves {
     vignette: Math.max(0.0, Math.min(0.9, vignette)),
     accent: Math.max(0, Math.min(1, accent)),
     haloIntensity: Math.max(0, Math.min(1, halo)),
+    assembly,
     phaseLabel
   };
 }
@@ -123,13 +143,22 @@ export function updateAgents(
   sig: SignalSample,
   t: number,
   dt: number,
-  elapsed: number
+  elapsed: number,
+  place: PlaceConfig
 ): void {
   const pos = agents.positions;
   const bri = agents.brightness;
   const seeds = agents.seeds;
   const phases = agents.phases;
   const aff = agents.routeAff;
+  const scl = agents.scales;
+  // Skyline assembly amount this frame (0 dispersed … 1 coalesced), scaled by the
+  // place's assemble strength. 0 keeps the canonical dispersed drift.
+  const assembleAmt = place.skyline.assemble;
+  const a = assembleAmt > 0 ? assembleAmt * curves.assembly : 0;
+  const sxh = agents.skyHomeX, szh = agents.skyHomeZ, shh = agents.skyHomeH;
+  const sctZ = agents.scatterZ, dsH = agents.dispH;
+  const chase = Math.min(1, 3 * dt);
 
   // How many agents are "live" this frame (density scales the active count).
   const activeFraction = 0.25 + curves.density * 0.75;
@@ -164,9 +193,20 @@ export function updateAgents(
       pos[i * 3 + 0] += (tx - pos[i * 3 + 0]) * lerpK;
       pos[i * 3 + 1] += (ty - pos[i * 3 + 1]) * lerpK;
       pos[i * 3 + 2] += (tz - pos[i * 3 + 2]) * lerpK;
+    } else if (assembleAmt > 0) {
+      // Assemble ↔ disperse: blend each agent between its dispersed wander anchor
+      // and its skyline home by `a`. Nothing translates toward the lens; nothing
+      // wraps. At a=0 it is a scattered field; at a=1 it stands as the city.
+      const seed = seeds[i];
+      const fade = 1 - a;
+      const tgtX = sxh[i] + Math.sin(elapsed * 0.4 + seed * 0.7) * 0.6 * fade;
+      const tgtZ = sctZ[i] + (szh[i] - sctZ[i]) * a + Math.cos(elapsed * 0.3 + seed * 1.3) * 0.6 * fade;
+      const tgtH = dsH[i] + (shh[i] - dsH[i]) * a;
+      pos[i * 3 + 0] += (tgtX - pos[i * 3 + 0]) * chase;
+      pos[i * 3 + 2] += (tgtZ - pos[i * 3 + 2]) * chase;
+      scl[i * 2 + 1] += (tgtH - scl[i * 2 + 1]) * chase;
     } else {
-      // Unrouted drift: slow noise wander toward center, with a tendency to
-      // disperse during dénouement.
+      // Canonical dispersed drift (web-default / no skyline).
       const seed = seeds[i];
       const vx = Math.sin(elapsed * 0.4 + seed * 0.7) * 0.12;
       const vz = Math.cos(elapsed * 0.3 + seed * 1.3) * 0.12;
@@ -205,4 +245,5 @@ export function updateAgents(
 
   agents.attrPos.needsUpdate = true;
   agents.attrBri.needsUpdate = true;
+  if (assembleAmt > 0) agents.attrScl.needsUpdate = true; // heights animate during assembly
 }

@@ -1,5 +1,6 @@
 import type { RNG } from '../engine/seed';
 import { rangeRNG } from '../engine/seed';
+import type { PlaceConfig } from '../place/place';
 
 // Signals are discrete events that propagate through the system.
 // They don't have their own geometry — they modulate agents, routes, windows.
@@ -24,7 +25,7 @@ export interface SignalEvent {
   magnitude: number;   // 0..1
 }
 
-export function scheduleSignals(rng: RNG): SignalEvent[] {
+export function scheduleSignals(rng: RNG, place: PlaceConfig): SignalEvent[] {
   // Anchor signals to the dramaturgy:
   //   ~0.10  faint open pulse
   //   ~0.32  routing clarifying pulse
@@ -43,8 +44,14 @@ export function scheduleSignals(rng: RNG): SignalEvent[] {
     { tFire: 0.88, halfLife: 0.08, kind: 'dim',     magnitude: 0.55 },
     { tFire: 0.96, halfLife: 0.06, kind: 'dim',     magnitude: 0.35 }
   ];
+  // Shift the whole schedule so the major sync lands at the place's syncTime, and
+  // scale every half-life by its tightness (deterministic — no rng consumed here).
+  const shift = place.tempo.syncTime - 0.68;
+  const tight = place.tempo.syncTightness;
   // small per-seed jitter so it isn't identical across seeds
   for (const e of evs) {
+    e.tFire = (((e.tFire + shift) % 1) + 1) % 1;
+    e.halfLife *= tight;
     e.tFire += rangeRNG(rng, -0.012, 0.012);
     e.magnitude *= 0.85 + rng() * 0.3;
   }

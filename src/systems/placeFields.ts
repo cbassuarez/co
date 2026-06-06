@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import type { PlaceConfig } from '../place/place';
 
 // Place-fields are the temporary collective formations of the system. They
 // are not "objects" the viewer reads — they are the emergent thickening of
@@ -16,7 +17,7 @@ export interface PlaceField {
   material: THREE.ShaderMaterial;
 }
 
-export function createGroundHalo(): PlaceField {
+export function createGroundHalo(place: PlaceConfig): PlaceField {
   const geom = new THREE.PlaneGeometry(28, 28, 1, 1);
   const material = new THREE.ShaderMaterial({
     transparent: true,
@@ -26,7 +27,9 @@ export function createGroundHalo(): PlaceField {
     uniforms: {
       uIntensity: { value: 0.0 },
       uTime: { value: 0.0 },
-      uColor: { value: new THREE.Color(0x6a8cbf) }
+      uColor: { value: new THREE.Color(place.halo.color) },
+      uBreathHz: { value: place.halo.breathHz },
+      uRadius: { value: place.halo.radius }
     },
     vertexShader: /* glsl */`
       varying vec2 vUv;
@@ -45,11 +48,13 @@ export function createGroundHalo(): PlaceField {
       uniform float uIntensity;
       uniform float uTime;
       uniform vec3 uColor;
+      uniform float uBreathHz;
+      uniform float uRadius;
       void main() {
         float d = length(vW.xz);
-        float halo = smoothstep(7.0, 0.0, d) * 0.5;
-        // Subtle breathing
-        float breathe = 0.85 + 0.15 * sin(uTime * 0.4);
+        float halo = smoothstep(uRadius, 0.0, d) * 0.5;
+        // Subtle breathing, at the place's own rate
+        float breathe = 0.85 + 0.15 * sin(uTime * uBreathHz);
         float a = halo * uIntensity * breathe;
         if (a < 0.001) discard;
         gl_FragColor = vec4(uColor * a, 1.0);

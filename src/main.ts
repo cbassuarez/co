@@ -3,6 +3,7 @@
 
 import * as THREE from 'three';
 import { readParams } from './engine/params';
+import { resolvePlace, localHourFor } from './place/place';
 import { makeRNG } from './engine/seed';
 import { Clock } from './engine/clock';
 import { createRenderer, bindResize } from './engine/renderer';
@@ -35,6 +36,8 @@ function applyCursor(showCursor: boolean) {
 
 async function main() {
   const params = readParams();
+  // Resolve "where" before anything generative: baked venue > ?place= > timezone > default.
+  const place = resolvePlace({ placeParam: params.place });
   applyCursor(params.showCursor);
   const hud = bootHud(params.showHud);
 
@@ -47,44 +50,50 @@ async function main() {
 
   const post = createPost(world.scene);
 
-  const rng = makeRNG(params.seed);
+  // Fold the place into the master seed so each place is its own deterministic world.
+  // An empty salt (web-default) leaves the seed untouched, preserving the canonical world.
+  const rng = makeRNG(place.seedSalt ? `${params.seed}:${place.seedSalt}` : params.seed);
 
   // ----- Build the systems -----
-  // Agent count scales with quality.
-  const agentCount =
+  // Agent count scales with quality, then with the place's density character.
+  const baseCount =
     params.quality === 'high' ? 1100 :
     params.quality === 'med'  ? 700  :
     420;
+  const agentCount = Math.max(1, Math.round(baseCount * place.agents.countScale));
 
-  const fieldWidth = 10.0;
-  const fieldDepth = 9.0;
-  const fieldHeight = 4.0;
+  const fieldWidth = place.field.width;
+  const fieldDepth = place.field.depth;
+  const fieldHeight = place.field.height;
 
   const agents = createAgents({
     count: agentCount,
     rng,
-    fieldWidth, fieldDepth, fieldHeight
+    fieldWidth, fieldDepth, fieldHeight,
+    place
   });
   world.scene.add(agents.mesh);
 
   const routes = createRoutes({
     rng,
-    count: 14,
-    fieldWidth, fieldDepth
+    count: place.routes.count,
+    fieldWidth, fieldDepth,
+    place
   });
   world.scene.add(routes.group);
 
   const windows = createWindows({
     rng,
-    count: 6,
-    fieldWidth, fieldDepth
+    count: place.windows.count,
+    fieldWidth, fieldDepth,
+    place
   });
   world.scene.add(windows.group);
 
-  const halo = createGroundHalo();
+  const halo = createGroundHalo(place);
   world.scene.add(halo.mesh);
 
-  const binds = bindAgentsToRoutes(rng, routes.routes, agents.count, 0.66);
+  const binds = bindAgentsToRoutes(rng, routes.routes, agents.count, place.agents.routedFraction);
   // sync the bind data back into agents.routeIndex / agents.routeAff
   for (let i = 0; i < agents.count; i++) {
     agents.routeIndex[i] = binds[i].routeIdx;
@@ -104,11 +113,21 @@ async function main() {
   agents.attrCol.needsUpdate = true;
   agents.attrAff.needsUpdate = true;
 
-  const signals = scheduleSignals(rng);
+  const signals = scheduleSignals(rng, place);
 
   bindResize(renderer, camera, (w, h) => post.setSize(w, h));
 
-  const clock = new Clock(params.durationSeconds, params.startAt);
+  // Optional local-time inflection: a venue that opts in enters the 120s arc at a
+  // phase set by its own local hour, so a morning install and an evening install
+  // read differently — still zero network (same Intl tz read as the resolver).
+  // Skipped when a start offset is given (?t=) or in capture/debug, to keep those
+  // deterministic.
+  let startAt = params.startAt;
+  if (place.tempo.phaseFollowsLocalTime && params.mode === 'exhibition' && startAt === 0) {
+    const hour = localHourFor(place.timezone);
+    startAt = (hour / 24) * params.durationSeconds;
+  }
+  const clock = new Clock(params.durationSeconds, startAt);
 
   // Capture-mode hook: when ?mode=capture, expose a deterministic time setter
   // so a Puppeteer harness can step through the cycle frame-by-frame.
@@ -133,7 +152,7 @@ async function main() {
 
     // Sample signals & curves
     const sig = sampleSignals(signals, state.t);
-    const curves = curvesAtT(state.t, sig);
+    const curves = curvesAtT(state.t, sig, place);
 
     // Camera drift
     driftCamera(camera, state.t, state.elapsed);
@@ -148,7 +167,8 @@ async function main() {
       sig,
       state.t,
       Math.min(0.05, state.delta),
-      state.elapsed
+      state.elapsed,
+      place
     );
 
     // Push uniforms — agents
@@ -193,7 +213,7 @@ async function main() {
 
     // halo
     halo.material.uniforms.uTime.value = state.elapsed;
-    halo.material.uniforms.uIntensity.value = curves.haloIntensity;
+    halo.material.uniforms.uIntensity.value = curves.haloIntensity * place.halo.intensityScale;
 
     // post overlays (grain + vignette as in-scene quads)
     post.setGrainAmount(curves.grain);
@@ -207,7 +227,7 @@ async function main() {
       const sec = state.cycleTime.toFixed(2);
       const fps = state.fps.toFixed(1);
       hud.set(
-`co · seed=${params.seed} · cycle ${state.cycle}
+`co · ${place.label} (${place.id}) · seed=${params.seed} · cycle ${state.cycle}
 phase: ${curves.phaseLabel}
 t=${t}  s=${sec}/${params.durationSeconds.toFixed(0)}  ${fps} fps
 density=${curves.density.toFixed(2)} routeVis=${curves.routeVis.toFixed(2)} sync=${curves.syncStrength.toFixed(2)}

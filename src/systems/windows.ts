@@ -1,10 +1,9 @@
 import * as THREE from 'three';
 import type { RNG } from '../engine/seed';
 import { rangeRNG } from '../engine/seed';
+import type { PlaceConfig } from '../place/place';
 import winVert from '../shaders/window.vert?raw';
 import winFrag from '../shaders/window.frag?raw';
-
-const WINDOW_COLOR = new THREE.Color(0xb8c4d6);
 
 export interface WindowField {
   mesh: THREE.Mesh;
@@ -25,16 +24,23 @@ export function createWindows(opts: {
   count: number;
   fieldWidth: number;
   fieldDepth: number;
+  place: PlaceConfig;
 }): WindowSystem {
   const group = new THREE.Group();
   group.renderOrder = 6;
   const windows: WindowField[] = [];
 
+  const winCfg = opts.place.windows;
+  const color = new THREE.Color(winCfg.color);
+  // aspect < 1 = tall/narrow facade; > 1 = wide/shallow billboard. 1 = baseline.
+  const asp = Math.sqrt(winCfg.aspect);
+  const commonOpen = opts.place.tempo.syncTime; // where synchronised windows converge
+
   // Distribute window peak times across the cycle so different windows are
-  // open at different phases.
+  // open at different phases (unless `sync` pulls them together).
   for (let i = 0; i < opts.count; i++) {
-    const w = rangeRNG(opts.rng, 1.4, 2.6);
-    const h = rangeRNG(opts.rng, 1.8, 3.4);
+    const w = rangeRNG(opts.rng, 1.4, 2.6) * asp;
+    const h = rangeRNG(opts.rng, 1.8, 3.4) / asp;
     const geom = new THREE.PlaneGeometry(w, h, 1, 1);
 
     const material = new THREE.ShaderMaterial({
@@ -46,7 +52,7 @@ export function createWindows(opts: {
       blending: THREE.AdditiveBlending,
       side: THREE.DoubleSide,
       uniforms: {
-        uColor: { value: WINDOW_COLOR.clone() },
+        uColor: { value: color.clone() },
         uAperture: { value: 0.0 },
         uIntensity: { value: 0.0 },
         uTime: { value: 0.0 },
@@ -57,9 +63,10 @@ export function createWindows(opts: {
     const mesh = new THREE.Mesh(geom, material);
     mesh.frustumCulled = false;
 
-    // Distribute windows in a soft arc behind the main agent zone
-    const angle = rangeRNG(opts.rng, -Math.PI * 0.55, Math.PI * 0.55);
-    const radius = rangeRNG(opts.rng, opts.fieldWidth * 0.45, opts.fieldWidth * 1.05);
+    // Distribute windows in a soft arc behind the main agent zone. Narrow arc =
+    // a building facade facing the camera; wide arc = signs along a boulevard.
+    const angle = rangeRNG(opts.rng, -winCfg.arcWidth, winCfg.arcWidth);
+    const radius = rangeRNG(opts.rng, opts.fieldWidth * winCfg.arcRadiusScale * 0.6, opts.fieldWidth * winCfg.arcRadiusScale * 1.4);
     mesh.position.set(
       Math.sin(angle) * radius,
       h * 0.5 + rangeRNG(opts.rng, -0.05, 0.4),
@@ -72,10 +79,14 @@ export function createWindows(opts: {
 
     group.add(mesh);
 
+    // Staggered opening, pulled toward a common moment by `sync`.
+    const stagger = 0.18 + (i / opts.count) * 0.8;
+    const openAt = stagger + (commonOpen - stagger) * winCfg.sync + rangeRNG(opts.rng, -0.04, 0.04);
+
     windows.push({
       mesh,
       material,
-      openAt: 0.18 + (i / opts.count) * 0.8 + rangeRNG(opts.rng, -0.04, 0.04),
+      openAt,
       openWidth: rangeRNG(opts.rng, 0.10, 0.22),
       seed: material.uniforms.uSeed.value as number,
       bounds
